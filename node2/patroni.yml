@@ -1,0 +1,78 @@
+scope: postgres
+name: dfinder_postgres_node2
+
+restapi:
+  listen: 0.0.0.0:18008
+  connect_address: dfinder_postgres_node2:18008
+
+etcd:
+  hosts: dfinder_etcd1:12379,dfinder_etcd2:12379,dfinder_etcd3:12379
+  protocol: http
+  namespace: /service/postgres/
+
+bootstrap:
+  dcs:
+    ttl: 20
+    loop_wait: 5
+    retry_timeout: 5
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      parameters:
+        password_encryption: md5
+        shared_preload_libraries: pg_stat_statements
+        ssl: 'off'
+        max_connections: 100
+        max_locks_per_transaction: 64
+        max_worker_processes: 8
+        wal_level: replica
+        hot_standby: 'on'
+        wal_keep_size: 128MB
+        shared_buffers: 1GB
+        work_mem: 16MB
+        max_wal_senders: 5
+        max_replication_slots: 5
+        checkpoint_timeout: 30min
+        log_timezone: Asia/Seoul
+        timezone: Asia/Seoul
+        log_filename: 'postgresql-%Y-%m-%d_%H%M%S.log'
+        log_truncate_on_rotation: off
+        log_rotation_age: 1d
+        log_rotation_size: 100MB
+  initdb:
+  - encoding: UTF8
+  - data-checksums
+  pg_hba:
+  - host replication all 0.0.0.0/0 md5
+  - host all all 0.0.0.0/0 md5
+  - host all all ::1/128 md5
+  users:
+    admin:
+      password: 1q2w3e4r5T#
+      options:
+        - createrole
+        - createdb
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false
+
+postgresql:
+  listen: 0.0.0.0:15432
+  connect_address: dfinder_postgres_node2:15432
+  data_dir: /var/lib/pgsql/16/data
+  bin_dir: /usr/pgsql-16/bin
+  authentication:
+    superuser:
+      username: postgres
+      password: 1q2w3e4r5T#
+    replication:
+      username: replicator
+      password: 1q2w3e4r5T#
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+
+
+watchdog:
+  mode: off
