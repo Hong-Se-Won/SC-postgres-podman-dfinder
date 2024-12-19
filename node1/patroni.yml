@@ -15,7 +15,7 @@ bootstrap:
     ttl: 20
     loop_wait: 5
     retry_timeout: 5
-    maximum_lag_on_failover: 1048576
+#    maximum_lag_on_failover: 1048576
     postgresql:
       use_pg_rewind: true
       parameters:
